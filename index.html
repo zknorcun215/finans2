@@ -101,6 +101,30 @@ table.dt tr:hover td{background:rgba(59,130,246,.04)}
 </head>
 <body>
 
+<!-- ŞİFRE EKRANI BAŞLANGIÇ -->
+<div id="lockScreen" style="display:flex;position:fixed;inset:0;background:#0a0e17;z-index:99999;justify-content:center;align-items:center">
+<div style="background:#131a2e;border:1px solid #1c2744;border-radius:14px;padding:40px;text-align:center;width:350px">
+<i class="fas fa-lock" style="font-size:48px;color:#3b82f6;margin-bottom:20px;display:block"></i>
+<h2 style="margin-bottom:8px;color:#e2e8f0">Finans Takip</h2>
+<p style="color:#94a3b8;font-size:13px;margin-bottom:20px">Devam etmek için şifrenizi girin</p>
+<input type="password" id="lockPass" placeholder="Şifre..." style="width:100%;padding:12px;background:#0a0e17;border:1px solid #1c2744;border-radius:8px;color:#e2e8f0;font-size:14px;margin-bottom:12px;text-align:center" onkeydown="if(event.key==='Enter')unlock()">
+<button onclick="unlock()" style="width:100%;padding:12px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:500">Giriş Yap</button>
+<p id="lockErr" style="color:#ef4444;font-size:12px;margin-top:10px;display:none">Yanlış şifre!</p>
+</div>
+</div>
+<script>
+function unlock(){
+  var sifre = "BurayaSifreniYaz";
+  if(document.getElementById('lockPass').value==='rq_b!6Xq'){
+    document.getElementById('lockScreen').style.display='none';
+  }else{
+    document.getElementById('lockErr').style.display='block';
+    document.getElementById('lockPass').value='';
+  }
+}
+</script>
+<!-- ŞİFRE EKRANI BİTİŞ -->
+
 <nav id="sb">
 <div class="sl"><i class="fas fa-chart-line"></i><span>Finans Takip</span></div>
 <div class="sn">
