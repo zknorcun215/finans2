@@ -92,6 +92,10 @@ table.dt tr:hover td{background:rgba(59,130,246,.04)}
 .empty-state{text-align:center;padding:40px;color:var(--t2)}
 .empty-state i{font-size:48px;margin-bottom:16px;opacity:.3}
 .empty-state p{font-size:14px}
+.sr-item{padding:14px;border-bottom:1px solid var(--bd);cursor:pointer;transition:.2s}
+.sr-item:hover{background:rgba(59,130,246,.1)}
+.search-row{display:flex;gap:8px;align-items:end}
+.search-row .fg{flex:1;margin-bottom:0}
 @media(max-width:768px){#mn{margin-left:0;padding:14px}#sb{transform:translateX(-100%)}#sb.mob{transform:translateX(0)}.fr,.g2,.scs{grid-template-columns:1fr;flex-direction:column}.gr{grid-template-columns:1fr}}
 </style>
 </head>
@@ -110,7 +114,6 @@ table.dt tr:hover td{background:rgba(59,130,246,.04)}
 
 <div id="mn">
 
-<!-- DASHBOARD -->
 <div class="pg a" id="p-dash">
 <div class="ph"><h1>📊 Genel Bakış</h1><p>Finansal durumunuzun anlık özeti</p></div>
 <div class="gr" id="dCards"></div>
@@ -120,7 +123,6 @@ table.dt tr:hover td{background:rgba(59,130,246,.04)}
 </div>
 </div>
 
-<!-- BANKS -->
 <div class="pg" id="p-bank">
 <div class="ph"><h1>🏦 Bankalar</h1><p>Hesaplarınız ve kartlarınız</p></div>
 <div class="ts" id="btabs">
@@ -140,7 +142,6 @@ table.dt tr:hover td{background:rgba(59,130,246,.04)}
 </div>
 </div>
 
-<!-- PAYMENTS -->
 <div class="pg" id="p-pay">
 <div class="ph"><h1>💳 Ödemeler</h1><p>Taksitli ve düzenli ödemeleriniz</p></div>
 <div class="bx">
@@ -150,7 +151,6 @@ table.dt tr:hover td{background:rgba(59,130,246,.04)}
 <table class="dt"><thead><tr><th>Ad</th><th>Tutar</th><th>Gün</th><th>Yöntem</th><th>Taksit</th><th>Durum</th><th>İşlem</th></tr></thead><tbody id="payT"></tbody></table>
 </div>
 
-<!-- COLLECTIBLES -->
 <div class="pg" id="p-col">
 <div class="ph"><h1>💎 Ziynetler</h1><p>Koleksiyon eşyalarınız ve güncel değerleri</p></div>
 <div class="bx">
@@ -160,7 +160,6 @@ table.dt tr:hover td{background:rgba(59,130,246,.04)}
 <div class="gr" id="colL"></div>
 </div>
 
-<!-- INVESTMENTS -->
 <div class="pg" id="p-inv">
 <div class="ph"><h1>📈 Yatırımlar</h1><p>Tüm yatırım araçlarınız ve portföy analizi</p></div>
 <div class="ts" id="itabs">
@@ -169,28 +168,24 @@ table.dt tr:hover td{background:rgba(59,130,246,.04)}
 <div class="tb" onclick="stb('itabs','ifx')">Döviz & Emtia</div>
 <div class="tb" onclick="stb('itabs','iop')">Optimizasyon</div>
 </div>
-
 <div class="tp a" id="t-ire">
 <div class="bx"><button class="bt bp" onclick="md('re')"><i class="fas fa-plus"></i> Ekle</button></div>
 <table class="dt"><thead><tr><th>Ad</th><th>Tür</th><th>Alış</th><th>Güncel</th><th>Kâr/Zarar</th><th>İşlem</th></tr></thead><tbody id="reT"></tbody></table>
 </div>
-
 <div class="tp" id="t-isc">
 <div class="bx">
 <button class="bt bp" onclick="md('sec')"><i class="fas fa-plus"></i> Ekle</button>
-<button class="bt bg" onclick="fetchSec()"><i class="fas fa-globe"></i> Fiyatları Çek</button>
+<button class="bt bg" onclick="fetchAllSec()"><i class="fas fa-globe"></i> Tüm Fiyatları Güncelle</button>
 </div>
 <table class="dt"><thead><tr><th>Sembol</th><th>Ad</th><th>Tür</th><th>Miktar</th><th>Alış/Br</th><th>Güncel</th><th>Toplam</th><th>K/Z</th><th>İşlem</th></tr></thead><tbody id="secT"></tbody></table>
 </div>
-
 <div class="tp" id="t-ifx">
 <div class="bx">
 <button class="bt bp" onclick="md('fx')"><i class="fas fa-plus"></i> Ekle</button>
-<button class="bt bg" onclick="fetchFx()"><i class="fas fa-globe"></i> Fiyatları Çek</button>
+<button class="bt bg" onclick="fetchAllFx()"><i class="fas fa-globe"></i> Tüm Fiyatları Güncelle</button>
 </div>
 <table class="dt"><thead><tr><th>Sembol</th><th>Ad</th><th>Tür</th><th>Miktar</th><th>Alış/Br</th><th>Güncel</th><th>Toplam</th><th>K/Z</th><th>İşlem</th></tr></thead><tbody id="fxT"></tbody></table>
 </div>
-
 <div class="tp" id="t-iop">
 <h3 style="margin-bottom:14px">Portföy Analizi & Optimizasyon</h3>
 <div class="scs" id="scArea"></div>
@@ -201,22 +196,28 @@ table.dt tr:hover td{background:rgba(59,130,246,.04)}
 <h3 style="margin:16px 0 8px">💡 Optimizasyon Asistanı</h3>
 <p style="color:var(--t2);font-size:12px;margin-bottom:10px">Portföyünüzle ilgili sorularınızı sorun: "Riskimi azalt", "Nakit ihtiyacım var", "Uzun vadeli büyüme istiyorum"</p>
 <div class="chb">
-<div class="chm" id="chMs"><div class="cm b"><div class="bb">Merhaba! Ben portföy optimizasyon asistanınızım. Yatırımlarınızla ilgili sorularınızı sorabilirsiniz. Risk azaltma, likidite artırma, çeşitlendirme veya herhangi bir konuda yardımcı olabilirim.</div></div></div>
+<div class="chm" id="chMs"><div class="cm b"><div class="bb">Merhaba! Ben portföy optimizasyon asistanınızım. Yatırımlarınızla ilgili sorularınızı sorabilirsiniz.</div></div></div>
 <div class="chi"><input id="chIn" placeholder="Sorunuzu yazın..." onkeydown="if(event.key==='Enter')chat()"><button onclick="chat()"><i class="fas fa-paper-plane"></i></button></div>
 </div>
 </div>
-
 </div>
 
 </div>
 
-<!-- MODAL -->
+<!-- FORM MODAL -->
 <div class="mo" id="mBg" onclick="if(event.target===this)cm()">
 <div class="ml" id="mB"></div>
 </div>
 
+<!-- ARAMA MODAL -->
+<div class="mo" id="sBg" onclick="if(event.target===this)csm()" style="z-index:2500">
+<div class="ml" id="sB" style="max-width:600px">
+<h2><i class="fas fa-search" style="color:var(--ac)"></i> Varlık Ara <button class="xx" onclick="csm()"><i class="fas fa-times"></i></button></h2>
+<div class="fg"><input id="sInp" placeholder="Hisse, kripto, döviz, emtia adı veya sembolü yazın..." oninput="debounceSearch()" autofocus></div>
+<div id="sRes" style="max-height:450px;overflow-y:auto"></div>
+</div>
+</div>
 <script>
-// =================== VERİ ===================
 let D=JSON.parse(localStorage.getItem('FTD')||'null')||{acc:[],cc:[],pay:[],col:[],re:[],sec:[],fx:[]};
 const sv=()=>localStorage.setItem('FTD',JSON.stringify(D));
 const uid=()=>'_'+Math.random().toString(36).slice(2,9)+Date.now().toString(36);
@@ -230,7 +231,7 @@ function toast(m,t='tok'){const d=document.createElement('div');d.className='tt 
 // =================== NAVİGASYON ===================
 function go(p){
   document.querySelectorAll('.si').forEach(s=>s.classList.remove('a'));
-  document.querySelector('.si[onclick=\"go(\''+p+'\')\"]').classList.add('a');
+  event.target.closest('.si').classList.add('a');
   document.querySelectorAll('.pg').forEach(x=>x.classList.remove('a'));
   document.getElementById('p-'+p).classList.add('a');
   if(p==='dash')rDash();if(p==='bank'){rAcc();rCC();}if(p==='pay')rPay();if(p==='col')rCol();if(p==='inv'){rRE();rSec();rFx();}
@@ -247,10 +248,133 @@ function stb(tid,pid){
 // =================== MODAL ===================
 function md(t,eid){document.getElementById('mB').innerHTML=gf(t,eid);document.getElementById('mBg').classList.add('sh')}
 function cm(){document.getElementById('mBg').classList.remove('sh')}
+function csm(){document.getElementById('sBg').classList.remove('sh')}
 
+// =================== ARAMA SİSTEMİ ===================
+function openSearch(){
+  document.getElementById('sBg').classList.add('sh');
+  document.getElementById('sInp').value='';
+  document.getElementById('sRes').innerHTML='<div style="text-align:center;padding:40px;color:var(--t2)"><i class="fas fa-search" style="font-size:36px;opacity:.2;display:block;margin-bottom:12px"></i>Hisse, kripto, döviz veya emtia aramak için yazmaya başlayın...<br><br><span style="font-size:11px">Örnekler: THYAO, Bitcoin, USDTRY, Altın, Tesla, Ethereum</span></div>';
+  setTimeout(()=>document.getElementById('sInp').focus(),100);
+}
+
+let sTimer;
+function debounceSearch(){clearTimeout(sTimer);sTimer=setTimeout(doSearch,400)}
+
+async function doSearch(){
+  const q=document.getElementById('sInp').value.trim();
+  if(q.length<2){document.getElementById('sRes').innerHTML='<div style="text-align:center;padding:30px;color:var(--t2)">En az 2 karakter yazın...</div>';return}
+  document.getElementById('sRes').innerHTML='<div style="text-align:center;padding:30px;color:var(--t2)"><i class="fas fa-spinner fa-spin" style="font-size:24px;display:block;margin-bottom:8px"></i>Aranıyor...</div>';
+  try{
+    const r=await fetch('/api/fetch-price?action=search&query='+encodeURIComponent(q));
+    const data=await r.json();
+    if(data.quotes&&data.quotes.length>0){
+      const typeMap={EQUITY:'Hisse Senedi',CRYPTOCURRENCY:'Kripto Para',CURRENCY:'Döviz',ETF:'ETF Fon',MUTUALFUND:'Yatırım Fonu',INDEX:'Endeks',FUTURE:'Vadeli İşlem',OPTION:'Opsiyon'};
+      const iconMap={EQUITY:'fa-chart-bar',CRYPTOCURRENCY:'fa-coins',CURRENCY:'fa-money-bill-wave',ETF:'fa-layer-group',MUTUALFUND:'fa-folder',INDEX:'fa-chart-line',FUTURE:'fa-clock'};
+      const colorMap={EQUITY:'bgb',CRYPTOCURRENCY:'bga',CURRENCY:'bgg',ETF:'bgb',MUTUALFUND:'bgg',INDEX:'bgr',FUTURE:'bga'};
+      document.getElementById('sRes').innerHTML=data.quotes.map(q=>{
+        const tn=typeMap[q.quoteType]||q.quoteType||'Bilinmiyor';
+        const ic=iconMap[q.quoteType]||'fa-question';
+        const cl=colorMap[q.quoteType]||'bgb';
+        const nm=q.shortname||q.longname||'';
+        const ex=q.exchDisp||q.exchange||'';
+        return '<div class="sr-item" onclick="pickResult(\''+q.symbol.replace(/'/g,"\\'")+'\',\''+nm.replace(/'/g,"\\'").replace(/"/g,"&quot;")+'\')">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center">'+
+        '<div style="display:flex;align-items:center;gap:10px"><i class="fas '+ic+'" style="color:var(--ac);font-size:16px"></i><strong style="font-size:14px">'+q.symbol+'</strong></div>'+
+        '<span class="ba '+cl+'">'+tn+'</span></div>'+
+        '<div style="font-size:12px;color:var(--t2);margin-top:4px;padding-left:26px">'+nm+(ex?' &bull; '+ex:'')+'</div></div>';
+      }).join('');
+    }else{
+      document.getElementById('sRes').innerHTML='<div class="empty-state"><i class="fas fa-search"></i><p>Sonuç bulunamadı. Farklı bir arama deneyin.</p></div>';
+    }
+  }catch(e){
+    document.getElementById('sRes').innerHTML='<div class="empty-state"><p style="color:var(--rd)">Arama hatası: '+e.message+'<br><br>İnternet bağlantınızı kontrol edin.</p></div>';
+  }
+}
+
+async function pickResult(symbol,name){
+  csm();
+  const f2=document.getElementById('f2');
+  const f3=document.getElementById('f3');
+  if(f2)f2.value=symbol;
+  if(f3)f3.value=name;
+  toast('Güncel fiyat çekiliyor: '+symbol+'...','tin');
+  const price=await getPrice(symbol);
+  const f6=document.getElementById('f6');
+  if(f6&&price>0){
+    f6.value=price.toFixed(2);
+    toast('Güncel fiyat: '+tl(price));
+  }else{
+    toast('Fiyat alınamadı, manuel girebilirsiniz','ter');
+  }
+}
+
+async function getPrice(symbol){
+  try{
+    const r=await fetch('/api/fetch-price?action=price&symbol='+encodeURIComponent(symbol));
+    const data=await r.json();
+    if(data.chart&&data.chart.result&&data.chart.result[0]){
+      const meta=data.chart.result[0].meta;
+      let price=meta.regularMarketPrice||0;
+      const cur=meta.currency||'';
+      if(cur==='USD'&&!symbol.includes('TRY')){
+        const tr=await fetch('/api/fetch-price?action=price&symbol=USDTRY%3DX');
+        const td2=await tr.json();
+        if(td2.chart&&td2.chart.result&&td2.chart.result[0]){
+          price*=td2.chart.result[0].meta.regularMarketPrice||34;
+        }
+      }else if(cur==='EUR'){
+        const tr=await fetch('/api/fetch-price?action=price&symbol=EURTRY%3DX');
+        const td2=await tr.json();
+        if(td2.chart&&td2.chart.result&&td2.chart.result[0]){
+          price*=td2.chart.result[0].meta.regularMarketPrice||37;
+        }
+      }else if(cur==='GBp'||cur==='GBX'){
+        price=price/100;
+        const tr=await fetch('/api/fetch-price?action=price&symbol=GBPTRY%3DX');
+        const td2=await tr.json();
+        if(td2.chart&&td2.chart.result&&td2.chart.result[0]){
+          price*=td2.chart.result[0].meta.regularMarketPrice||43;
+        }
+      }
+      return Math.round(price*100)/100;
+    }
+    return 0;
+  }catch(e){console.error('Fiyat hatası:',e);return 0}
+}
+
+async function fetchAllSec(){
+  if(!D.sec.length){toast('Güncellenecek varlık yok','ter');return}
+  toast('Tüm fiyatlar güncelleniyor...','tin');
+  let cnt=0;
+  for(let s of D.sec){
+    if(!s.sym)continue;
+    const p=await getPrice(s.sym);
+    if(p>0){s.cur=p;cnt++}
+    await new Promise(r=>setTimeout(r,350));
+  }
+  sv();rSec();
+  toast(cnt>0?cnt+' varlığın fiyatı güncellendi':'Fiyat alınamadı',cnt>0?'tok':'ter');
+}
+
+async function fetchAllFx(){
+  if(!D.fx.length){toast('Güncellenecek varlık yok','ter');return}
+  toast('Tüm fiyatlar güncelleniyor...','tin');
+  let cnt=0;
+  for(let f of D.fx){
+    if(!f.sym)continue;
+    const p=await getPrice(f.sym);
+    if(p>0){f.cur=p;cnt++}
+    await new Promise(r=>setTimeout(r,350));
+  }
+  sv();rFx();
+  toast(cnt>0?cnt+' döviz/emtia güncellendi':'Fiyat alınamadı',cnt>0?'tok':'ter');
+}
+
+// =================== FORM ÜRETİCİ ===================
 function gf(t,eid){
   const X='<button class="xx" onclick="cm()"><i class="fas fa-times"></i></button>';
-  // --- HESAP ---
+
   if(t==='acc'){
     const e=eid?D.acc.find(a=>a.id===eid):null;
     return '<h2><i class="fas fa-university" style="color:var(--ac)"></i> '+(e?'Hesap Düzenle':'Hesap Ekle')+X+'</h2>'+
@@ -259,9 +383,9 @@ function gf(t,eid){
     '<div class="fg"><label>IBAN</label><input id="f3" value="'+(e?e.iban:'')+'"></div>'+
     '<div class="fr"><div class="fg"><label>Bakiye (₺)</label><input type="number" step="0.01" id="f4" value="'+(e?e.bal:0)+'"></div>'+
     '<div class="fg"><label>Para Birimi</label><select id="f5"><option'+(e&&e.cur==='TRY'?' selected':'')+'>TRY</option><option'+(e&&e.cur==='USD'?' selected':'')+'>USD</option><option'+(e&&e.cur==='EUR'?' selected':'')+'>EUR</option><option'+(e&&e.cur==='GBP'?' selected':'')+'>GBP</option></select></div></div>'+
-    '<button class="bt bp" onclick="svAcc(\''+( eid||'')+'\')">Kaydet</button>';
+    '<button class="bt bp" onclick="svAcc(\''+(eid||'')+'\')">Kaydet</button>';
   }
-  // --- KREDİ KARTI ---
+
   if(t==='cc'){
     const e=eid?D.cc.find(c=>c.id===eid):null;
     let ao='<option value="">Hesap Seçin</option>';
@@ -276,7 +400,7 @@ function gf(t,eid){
     '<div class="fg"><label>Son Ödeme Günü (1-28)</label><input type="number" min="1" max="28" id="f7" value="'+(e?e.pyDay:10)+'"></div></div>'+
     '<button class="bt bp" onclick="svCC(\''+(eid||'')+'\')">Kaydet</button>';
   }
-  // --- ÖDEME ---
+
   if(t==='pay'){
     const e=eid?D.pay.find(p=>p.id===eid):null;
     let mo='<option value="">Seçin</option>';
@@ -293,7 +417,7 @@ function gf(t,eid){
     '<div class="fg"><label>Kalan Taksit</label><input type="number" id="f7" value="'+(e?e.rInst:0)+'"></div></div></div>'+
     '<button class="bt bp" onclick="svPay(\''+(eid||'')+'\')">Kaydet</button>';
   }
-  // --- ZİYNET ---
+
   if(t==='coll'){
     const e=eid?D.col.find(c=>c.id===eid):null;
     const cats=['Saat','Mücevher','Antika','Tablo','Sikke','Elektronik','Pul','Silah','Enstrüman','Diğer'];
@@ -315,7 +439,7 @@ function gf(t,eid){
     '<div class="fg"><label>Notlar</label><textarea id="f12" rows="2">'+(e?e.notes:'')+'</textarea></div>'+
     '<button class="bt bp" onclick="svCol(\''+(eid||'')+'\')">Kaydet</button>';
   }
-  // --- TAŞINMAZ ---
+
   if(t==='re'){
     const e=eid?D.re.find(r=>r.id===eid):null;
     const tps=['Ev/Daire','Arsa','İşyeri','Araba','Diğer'];
@@ -329,30 +453,34 @@ function gf(t,eid){
     '<div class="fg"><label>Notlar</label><textarea id="f6" rows="2">'+(e?e.notes:'')+'</textarea></div>'+
     '<button class="bt bp" onclick="svRE(\''+(eid||'')+'\')">Kaydet</button>';
   }
-  // --- HİSSE/FON/KRİPTO ---
+
   if(t==='sec'){
     const e=eid?D.sec.find(s=>s.id===eid):null;
     return '<h2><i class="fas fa-chart-line" style="color:var(--ac)"></i> '+(e?'Düzenle':'Hisse/Fon/Kripto Ekle')+X+'</h2>'+
     '<div class="fg"><label>Tür</label><select id="f1"><option value="stock"'+(e&&e.type==='stock'?' selected':'')+'>Hisse Senedi</option><option value="fund"'+(e&&e.type==='fund'?' selected':'')+'>Fon</option><option value="crypto"'+(e&&e.type==='crypto'?' selected':'')+'>Kripto Para</option></select></div>'+
-    '<div class="fg"><label>Sembol (Hisse: THYAO.IS | Kripto: bitcoin | Fon: fon kodu)</label><input id="f2" value="'+(e?e.sym:'')+'"></div>'+
+    '<div style="display:flex;gap:8px;align-items:end;margin-bottom:13px"><div class="fg" style="flex:1;margin:0"><label>Sembol <span style="color:var(--t2);font-size:10px">(Ara butonuyla bul)</span></label><input id="f2" value="'+(e?e.sym:'')+'"></div>'+
+    '<button class="bt bp" type="button" onclick="openSearch()" style="height:38px;white-space:nowrap"><i class="fas fa-search"></i> Ara</button></div>'+
     '<div class="fg"><label>Ad</label><input id="f3" value="'+(e?e.name:'')+'"></div>'+
     '<div class="fr"><div class="fg"><label>Miktar</label><input type="number" step="0.0001" id="f4" value="'+(e?e.qty:0)+'"></div>'+
     '<div class="fg"><label>Alış Fiyatı (Birim ₺)</label><input type="number" step="0.01" id="f5" value="'+(e?e.buy:0)+'"></div></div>'+
     '<div class="fr"><div class="fg"><label>Güncel Fiyat (₺)</label><input type="number" step="0.01" id="f6" value="'+(e?e.cur:0)+'"></div>'+
     '<div class="fg"><label>Alış Tarihi</label><input type="date" id="f7" value="'+(e?e.date:'')+'"></div></div>'+
+    '<p style="font-size:11px;color:var(--t2);margin-bottom:12px">💡 "Ara" butonuna tıklayarak hisse, kripto veya fon arayın. Seçtiğinizde sembol, ad ve güncel fiyat otomatik dolar.</p>'+
     '<button class="bt bp" onclick="svSec(\''+(eid||'')+'\')">Kaydet</button>';
   }
-  // --- DÖVİZ/EMTİA ---
+
   if(t==='fx'){
     const e=eid?D.fx.find(f=>f.id===eid):null;
     return '<h2><i class="fas fa-coins" style="color:var(--am)"></i> '+(e?'Düzenle':'Döviz/Emtia Ekle')+X+'</h2>'+
     '<div class="fg"><label>Tür</label><select id="f1"><option value="currency"'+(e&&e.type==='currency'?' selected':'')+'>Döviz</option><option value="gold"'+(e&&e.type==='gold'?' selected':'')+'>Altın</option><option value="silver"'+(e&&e.type==='silver'?' selected':'')+'>Gümüş</option><option value="commodity"'+(e&&e.type==='commodity'?' selected':'')+'>Diğer Emtia</option></select></div>'+
-    '<div class="fg"><label>Sembol (Döviz: USDTRY=X | Altın: GC=F | Gümüş: SI=F)</label><input id="f2" value="'+(e?e.sym:'')+'"></div>'+
+    '<div style="display:flex;gap:8px;align-items:end;margin-bottom:13px"><div class="fg" style="flex:1;margin:0"><label>Sembol <span style="color:var(--t2);font-size:10px">(Ara butonuyla bul)</span></label><input id="f2" value="'+(e?e.sym:'')+'"></div>'+
+    '<button class="bt bp" type="button" onclick="openSearch()" style="height:38px;white-space:nowrap"><i class="fas fa-search"></i> Ara</button></div>'+
     '<div class="fg"><label>Ad</label><input id="f3" value="'+(e?e.name:'')+'"></div>'+
     '<div class="fr"><div class="fg"><label>Miktar</label><input type="number" step="0.0001" id="f4" value="'+(e?e.qty:0)+'"></div>'+
     '<div class="fg"><label>Alış Fiyatı (Birim ₺)</label><input type="number" step="0.01" id="f5" value="'+(e?e.buy:0)+'"></div></div>'+
     '<div class="fr"><div class="fg"><label>Güncel Fiyat (₺)</label><input type="number" step="0.01" id="f6" value="'+(e?e.cur:0)+'"></div>'+
     '<div class="fg"><label>Alış Tarihi</label><input type="date" id="f7" value="'+(e?e.date:'')+'"></div></div>'+
+    '<p style="font-size:11px;color:var(--t2);margin-bottom:12px">💡 "Ara" ile döviz çifti veya emtia bulun. Örn: USDTRY, altın, gümüş, petrol</p>'+
     '<button class="bt bp" onclick="svFx(\''+(eid||'')+'\')">Kaydet</button>';
   }
   return '';
@@ -360,17 +488,14 @@ function gf(t,eid){
 
 // =================== KAYIT FONKSİYONLARI ===================
 
-// HESAP KAYDET
 function svAcc(eid){
   const o={id:eid||uid(),bank:document.getElementById('f1').value,name:document.getElementById('f2').value,iban:document.getElementById('f3').value,bal:parseFloat(document.getElementById('f4').value)||0,cur:document.getElementById('f5').value};
   if(!o.bank){toast('Banka adı gerekli','ter');return}
   if(eid){const i=D.acc.findIndex(a=>a.id===eid);D.acc[i]=o}else{D.acc.push(o)}
   sv();cm();rAcc();toast(eid?'Hesap güncellendi':'Hesap eklendi');
 }
-// HESAP SİL
 function dAcc(id){if(confirm('Bu hesabı silmek istediğinize emin misiniz?')){D.acc=D.acc.filter(a=>a.id!==id);sv();rAcc();toast('Hesap silindi','tin')}}
 
-// KREDİ KARTI KAYDET
 function svCC(eid){
   const o={id:eid||uid(),name:document.getElementById('f1').value,num:document.getElementById('f2').value,accId:document.getElementById('f3').value,limit:parseFloat(document.getElementById('f4').value)||0,used:parseFloat(document.getElementById('f5').value)||0,stDay:parseInt(document.getElementById('f6').value)||1,pyDay:parseInt(document.getElementById('f7').value)||10};
   if(!o.name){toast('Kart adı gerekli','ter');return}
@@ -379,24 +504,19 @@ function svCC(eid){
 }
 function dCC(id){if(confirm('Bu kartı silmek istediğinize emin misiniz?')){D.cc=D.cc.filter(c=>c.id!==id);sv();rCC();toast('Kart silindi','tin')}}
 
-// EKSTRE İŞLE
 function procStmt(){
-  const day=td();let cnt=0;
+  const day=td();let cnt
+
+  =0;
   D.cc.forEach(c=>{
     if(c.pyDay===day && c.used>0 && c.accId){
       const acc=D.acc.find(a=>a.id===c.accId);
-      if(acc){
-        acc.bal-=c.used;
-        c.used=0;
-        cnt++;
-      }
+      if(acc){acc.bal-=c.used;c.used=0;cnt++}
     }
   });
-  sv();rAcc();rCC();
-  toast(cnt>0?cnt+' kart ekstresi işlendi':'Bugün vadesi gelen ekstre yok','tin');
+  sv();rAcc();rCC();toast(cnt>0?cnt+' kart ekstresi işlendi':'Bugün vadesi gelen ekstre yok','tin');
 }
 
-// ÖDEME KAYDET
 function svPay(eid){
   const isI=document.getElementById('f5').value==='1';
   const o={id:eid||uid(),name:document.getElementById('f1').value,amt:parseFloat(document.getElementById('f2').value)||0,day:parseInt(document.getElementById('f3').value)||1,mth:document.getElementById('f4').value,inst:isI,tInst:isI?parseInt(document.getElementById('f6').value)||0:0,rInst:isI?parseInt(document.getElementById('f7').value)||0:0,active:true};
@@ -406,29 +526,18 @@ function svPay(eid){
 }
 function dPay(id){if(confirm('Bu ödemeyi silmek istediğinize emin misiniz?')){D.pay=D.pay.filter(p=>p.id!==id);sv();rPay();toast('Ödeme silindi','tin')}}
 
-// VADESİ GELENLERİ İŞLE
 function procDue(){
   const day=td();let cnt=0;
   D.pay.forEach(p=>{
     if(p.day===day && p.active){
-      if(p.mth.startsWith('a_')){
-        const acc=D.acc.find(a=>a.id===p.mth.slice(2));
-        if(acc){acc.bal-=p.amt;cnt++}
-      }else if(p.mth.startsWith('c_')){
-        const cc=D.cc.find(c=>c.id===p.mth.slice(2));
-        if(cc){cc.used+=p.amt;cnt++}
-      }
-      if(p.inst){
-        p.rInst--;
-        if(p.rInst<=0)p.active=false;
-      }
+      if(p.mth.startsWith('a_')){const acc=D.acc.find(a=>a.id===p.mth.slice(2));if(acc){acc.bal-=p.amt;cnt++}}
+      else if(p.mth.startsWith('c_')){const cc=D.cc.find(c=>c.id===p.mth.slice(2));if(cc){cc.used+=p.amt;cnt++}}
+      if(p.inst){p.rInst--;if(p.rInst<=0)p.active=false}
     }
   });
-  sv();rPay();rAcc();rCC();
-  toast(cnt>0?cnt+' ödeme işlendi':'Bugün vadesi gelen ödeme yok','tin');
+  sv();rPay();rAcc();rCC();toast(cnt>0?cnt+' ödeme işlendi':'Bugün vadesi gelen ödeme yok','tin');
 }
 
-// ZİYNET KAYDET
 function svCol(eid){
   const o={id:eid||uid(),name:document.getElementById('f1').value,cat:document.getElementById('f2').value,cond:document.getElementById('f3').value,price:parseFloat(document.getElementById('f4').value)||0,date:document.getElementById('f5').value,brand:document.getElementById('f6').value,model:document.getElementById('f7').value,mat:document.getElementById('f8').value,weight:document.getElementById('f9').value,year:document.getElementById('f10').value,curVal:parseFloat(document.getElementById('f11').value)||0,notes:document.getElementById('f12').value};
   if(!o.name){toast('Eşya adı gerekli','ter');return}
@@ -437,12 +546,9 @@ function svCol(eid){
 }
 function dCol(id){if(confirm('Bu eşyayı silmek istediğinize emin misiniz?')){D.col=D.col.filter(c=>c.id!==id);sv();rCol();toast('Eşya silindi','tin')}}
 
-// ZİYNET DEĞERLEME
 function estAll(){
   D.col.forEach(c=>{
-    let base=c.price;
-    const age=c.year?(2025-parseInt(c.year)):5;
-    let mult=1;
+    let base=c.price;const age=c.year?(2025-parseInt(c.year)):5;let mult=1;
     if(c.cat==='Antika')mult=1+age*0.04;
     else if(c.cat==='Saat')mult=1+age*0.03;
     else if(c.cat==='Mücevher')mult=1+age*0.025;
@@ -450,17 +556,12 @@ function estAll(){
     else if(c.cat==='Sikke')mult=1+age*0.06;
     else if(c.cat==='Elektronik')mult=Math.max(0.3,1-age*0.12);
     else mult=1+age*0.02;
-    if(c.cond==='Mükemmel')mult*=1.2;
-    else if(c.cond==='Çok İyi')mult*=1.1;
-    else if(c.cond==='İyi')mult*=1;
-    else if(c.cond==='Orta')mult*=0.85;
-    else mult*=0.65;
+    if(c.cond==='Mükemmel')mult*=1.2;else if(c.cond==='Çok İyi')mult*=1.1;else if(c.cond==='İyi')mult*=1;else if(c.cond==='Orta')mult*=0.85;else mult*=0.65;
     c.curVal=Math.round(base*mult*100)/100;
   });
   sv();rCol();toast('Tüm eşyalar değerlendi');
 }
 
-// TAŞINMAZ KAYDET
 function svRE(eid){
   const o={id:eid||uid(),name:document.getElementById('f1').value,type:document.getElementById('f2').value,buy:parseFloat(document.getElementById('f3').value)||0,date:document.getElementById('f4').value,cur:parseFloat(document.getElementById('f5').value)||0,notes:document.getElementById('f6').value};
   if(!o.name){toast('Ad gerekli','ter');return}
@@ -469,18 +570,16 @@ function svRE(eid){
 }
 function dRE(id){if(confirm('Silmek istediğinize emin misiniz?')){D.re=D.re.filter(r=>r.id!==id);sv();rRE();toast('Silindi','tin')}}
 
-// MENKUL KIYMET KAYDET
 function svSec(eid){
-  const o={id:eid||uid(),type:document.getElementById('f1').value,sym:document.getElementById('f2').value,name:document.getElementById('f3').value,qty:parseFloat(document.getElementById('f4').value)||0,buy:parseFloat(document.getElementById('f5').value)||0,cur:parseFloat(document.getElementById('f6').value)||0,date:document.getElementById('f7').value};
+  const o={id:eid||uid(),type:document.getElementById('f1').value,sym:document.getElementById('f2').value.toUpperCase(),name:document.getElementById('f3').value,qty:parseFloat(document.getElementById('f4').value)||0,buy:parseFloat(document.getElementById('f5').value)||0,cur:parseFloat(document.getElementById('f6').value)||0,date:document.getElementById('f7').value};
   if(!o.sym){toast('Sembol gerekli','ter');return}
   if(eid){const i=D.sec.findIndex(s=>s.id===eid);D.sec[i]=o}else{D.sec.push(o)}
   sv();cm();rSec();toast(eid?'Güncellendi':'Eklendi');
 }
 function dSec(id){if(confirm('Silmek istediğinize emin misiniz?')){D.sec=D.sec.filter(s=>s.id!==id);sv();rSec();toast('Silindi','tin')}}
 
-// DÖVİZ/EMTİA KAYDET
 function svFx(eid){
-  const o={id:eid||uid(),type:document.getElementById('f1').value,sym:document.getElementById('f2').value,name:document.getElementById('f3').value,qty:parseFloat(document.getElementById('f4').value)||0,buy:parseFloat(document.getElementById('f5').value)||0,cur:parseFloat(document.getElementById('f6').value)||0,date:document.getElementById('f7').value};
+  const o={id:eid||uid(),type:document.getElementById('f1').value,sym:document.getElementById('f2').value.toUpperCase(),name:document.getElementById('f3').value,qty:parseFloat(document.getElementById('f4').value)||0,buy:parseFloat(document.getElementById('f5').value)||0,cur:parseFloat(document.getElementById('f6').value)||0,date:document.getElementById('f7').value};
   if(!o.sym){toast('Sembol gerekli','ter');return}
   if(eid){const i=D.fx.findIndex(f=>f.id===eid);D.fx[i]=o}else{D.fx.push(o)}
   sv();cm();rFx();toast(eid?'Güncellendi':'Eklendi');
@@ -489,14 +588,12 @@ function dFx(id){if(confirm('Silmek istediğinize emin misiniz?')){D.fx=D.fx.fil
 
 // =================== RENDER ===================
 
-// HESAPLAR
 function rAcc(){
   const el=document.getElementById('accL');
   if(!D.acc.length){el.innerHTML='<div class="empty-state"><i class="fas fa-university"></i><p>Henüz hesap eklenmedi</p></div>';return}
   el.innerHTML=D.acc.map(a=>'<div class="cd"><div class="lb">'+a.bank+'</div><div class="vl">'+tl(a.bal)+'</div><div class="su" style="color:var(--t2)">'+a.name+(a.iban?' • '+a.iban:'')+'</div><div class="su"><span class="ba bgb">'+a.cur+'</span></div><div style="margin-top:12px;display:flex;gap:6px"><button class="bt bo bs" onclick="md(\'acc\',\''+a.id+'\')"><i class="fas fa-edit"></i></button><button class="bt br bs" onclick="dAcc(\''+a.id+'\')"><i class="fas fa-trash"></i></button></div></div>').join('');
 }
 
-// KREDİ KARTLARI
 function rCC(){
   const el=document.getElementById('ccL');
   if(!D.cc.length){el.innerHTML='<div class="empty-state"><i class="fas fa-credit-card"></i><p>Henüz kredi kartı eklenmedi</p></div>';return}
@@ -505,7 +602,7 @@ function rCC(){
     const acc=D.acc.find(a=>a.id===c.accId);
     return '<div class="cd"><div class="lb">'+c.name+' <span style="float:right;color:var(--t2)">**** '+c.num+'</span></div>'+
     '<div style="margin:10px 0"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Kullanılan: '+tl(c.used)+'</span><span>Limit: '+tl(c.limit)+'</span></div>'+
-    '<div style="background:var(--bd);border-radius:10px;height:8px;overflow:hidden"><div style="background:'+(pct>80?'var(--rd)':pct>50?'var(--am)':'var(--gn)')+';height:100%;width:'+pct+'%;border-radius:10px;transition:.3s"></div></div></div>'+
+    '<div style="background:var(--bd);border-radius:10px;height:8px;overflow:hidden"><div style="background:'+(pct>80?'var(--rd)':pct>50?'var(--am)':'var(--gn)')+';height:100%;width:'+pct+'%;border-radius:10px"></div></div></div>'+
     '<div class="vl pos">Kullanılabilir: '+tl(avail)+'</div>'+
     '<div class="su" style="color:var(--t2)">Ekstre: '+c.stDay+'. gün | Son Ödeme: '+c.pyDay+'. gün</div>'+
     (acc?'<div class="su"><span class="ba bgb">Bağlı: '+acc.bank+'</span></div>':'')+
@@ -513,22 +610,20 @@ function rCC(){
   }).join('');
 }
 
-// ÖDEMELER
 function rPay(){
   const el=document.getElementById('payT');
-  if(!D.pay.length){el.innerHTML='<tr><td colspan="7" class="empty-state"><i class="fas fa-file-invoice-dollar"></i><p>Henüz ödeme eklenmedi</p></td></tr>';return}
+  if(!D.pay.length){el.innerHTML='<tr><td colspan="7" class="empty-state">Henüz ödeme eklenmedi</td></tr>';return}
   el.innerHTML=D.pay.map(p=>{
-    let mName='—';
-    if(p.mth.startsWith('a_')){const a=D.acc.find(x=>x.id===p.mth.slice(2));if(a)mName=a.bank}
-    else if(p.mth.startsWith('c_')){const c=D.cc.find(x=>x.id===p.mth.slice(2));if(c)mName=c.name}
-    return '<tr><td>'+p.name+'</td><td>'+tl(p.amt)+'</td><td>'+p.day+'</td><td>'+mName+'</td>'+
+    let mN='—';
+    if(p.mth&&p.mth.startsWith('a_')){const a=D.acc.find(x=>x.id===p.mth.slice(2));if(a)mN=a.bank}
+    else if(p.mth&&p.mth.startsWith('c_')){const c=D.cc.find(x=>x.id===p.mth.slice(2));if(c)mN=c.name}
+    return '<tr><td>'+p.name+'</td><td>'+tl(p.amt)+'</td><td>'+p.day+'</td><td>'+mN+'</td>'+
     '<td>'+(p.inst?(p.tInst-p.rInst)+'/'+p.tInst:'Düzenli')+'</td>'+
     '<td><span class="ba '+(p.active?'bgg':'bgr')+'">'+(p.active?'Aktif':'Bitti')+'</span></td>'+
     '<td><button class="bt bo bs" onclick="md(\'pay\',\''+p.id+'\')"><i class="fas fa-edit"></i></button> <button class="bt br bs" onclick="dPay(\''+p.id+'\')"><i class="fas fa-trash"></i></button></td></tr>';
   }).join('');
 }
 
-// ZİYNETLER
 function rCol(){
   const el=document.getElementById('colL');
   if(!D.col.length){el.innerHTML='<div class="empty-state"><i class="fas fa-gem"></i><p>Henüz eşya eklenmedi</p></div>';return}
@@ -541,8 +636,7 @@ function rCol(){
     (c.mat?'<div><span style="color:var(--t2)">Malzeme:</span> '+c.mat+'</div>':'')+
     (c.weight?'<div><span style="color:var(--t2)">Ağırlık:</span> '+c.weight+'</div>':'')+
     (c.year?'<div><span style="color:var(--t2)">Üretim:</span> '+c.year+'</div>':'')+
-    '<div><span style="color:var(--t2)">Durum:</span> '+c.cond+'</div>'+
-    '</div>'+
+    '<div><span style="color:var(--t2)">Durum:</span> '+c.cond+'</div></div>'+
     '<div style="display:flex;justify-content:space-between;margin-top:10px"><div><div style="font-size:11px;color:var(--t2)">Alış</div><div style="font-weight:600">'+tl(c.price)+'</div></div>'+
     '<div style="text-align:right"><div style="font-size:11px;color:var(--t2)">Güncel Değer</div><div style="font-weight:600">'+tl(c.curVal)+'</div></div></div>'+
     '<div class="su '+(diff>=0?'pos':'neg')+'">K/Z: '+tl(diff)+' ('+pct.toFixed(1)+'%)</div>'+
@@ -551,10 +645,9 @@ function rCol(){
   }).join('');
 }
 
-// TAŞINMAZ
 function rRE(){
   const el=document.getElementById('reT');
-  if(!D.re.length){el.innerHTML='<tr><td colspan="6" class="empty-state"><i class="fas fa-building"></i><p>Henüz taşınmaz/araba eklenmedi</p></td></tr>';return}
+  if(!D.re.length){el.innerHTML='<tr><td colspan="6" class="empty-state">Henüz taşınmaz/araba eklenmedi</td></tr>';return}
   el.innerHTML=D.re.map(r=>{
     const diff=r.cur-r.buy;const pct=r.buy>0?((diff/r.buy)*100):0;
     return '<tr><td><strong>'+r.name+'</strong></td><td><span class="ba bgb">'+r.type+'</span></td><td>'+tl(r.buy)+'</td><td>'+tl(r.cur)+'</td>'+
@@ -563,139 +656,43 @@ function rRE(){
   }).join('');
 }
 
-// MENKUL KIYMETLER
 function rSec(){
   const el=document.getElementById('secT');
-  if(!D.sec.length){el.innerHTML='<tr><td colspan="9" class="empty-state"><i class="fas fa-chart-line"></i><p>Henüz varlık eklenmedi</p></td></tr>';return}
+  if(!D.sec.length){el.innerHTML='<tr><td colspan="9" class="empty-state">Henüz varlık eklenmedi</td></tr>';return}
   el.innerHTML=D.sec.map(s=>{
     const total=s.qty*s.cur;const cost=s.qty*s.buy;const diff=total-cost;const pct=cost>0?((diff/cost)*100):0;
-    const tNames={stock:'Hisse',fund:'Fon',crypto:'Kripto'};
-    const tColors={stock:'bgb',fund:'bgg',crypto:'bga'};
-    return '<tr><td><strong>'+s.sym+'</strong></td><td>'+s.name+'</td><td><span class="ba '+tColors[s.type]+'">'+tNames[s.type]+'</span></td>'+
+    const tN={stock:'Hisse',fund:'Fon',crypto:'Kripto'};const tC={stock:'bgb',fund:'bgg',crypto:'bga'};
+    return '<tr><td><strong>'+s.sym+'</strong></td><td>'+s.name+'</td><td><span class="ba '+(tC[s.type]||'bgb')+'">'+tN[s.type]+'</span></td>'+
     '<td>'+fm(s.qty)+'</td><td>'+tl(s.buy)+'</td><td>'+tl(s.cur)+'</td><td><strong>'+tl(total)+'</strong></td>'+
     '<td class="'+(diff>=0?'pos':'neg')+'">'+tl(diff)+' ('+pct.toFixed(1)+'%)</td>'+
     '<td><button class="bt bo bs" onclick="md(\'sec\',\''+s.id+'\')"><i class="fas fa-edit"></i></button> <button class="bt br bs" onclick="dSec(\''+s.id+'\')"><i class="fas fa-trash"></i></button></td></tr>';
   }).join('');
 }
 
-// DÖVİZ & EMTİA
 function rFx(){
   const el=document.getElementById('fxT');
-  if(!D.fx.length){el.innerHTML='<tr><td colspan="9" class="empty-state"><i class="fas fa-coins"></i><p>Henüz döviz/emtia eklenmedi</p></td></tr>';return}
+  if(!D.fx.length){el.innerHTML='<tr><td colspan="9" class="empty-state">Henüz döviz/emtia eklenmedi</td></tr>';return}
   el.innerHTML=D.fx.map(f=>{
     const total=f.qty*f.cur;const cost=f.qty*f.buy;const diff=total-cost;const pct=cost>0?((diff/cost)*100):0;
-    const tNames={currency:'Döviz',gold:'Altın',silver:'Gümüş',commodity:'Emtia'};
-    const tColors={currency:'bgb',gold:'bga',silver:'bgg',commodity:'bgr'};
-    return '<tr><td><strong>'+f.sym+'</strong></td><td>'+f.name+'</td><td><span class="ba '+(tColors[f.type]||'bgb')+'">'+tNames[f.type]+'</span></td>'+
+    const tN={currency:'Döviz',gold:'Altın',silver:'Gümüş',commodity:'Emtia'};const tC={currency:'bgb',gold:'bga',silver:'bgg',commodity:'bgr'};
+    return '<tr><td><strong>'+f.sym+'</strong></td><td>'+f.name+'</td><td><span class="ba '+(tC[f.type]||'bgb')+'">'+tN[f.type]+'</span></td>'+
     '<td>'+fm(f.qty)+'</td><td>'+tl(f.buy)+'</td><td>'+tl(f.cur)+'</td><td><strong>'+tl(total)+'</strong></td>'+
     '<td class="'+(diff>=0?'pos':'neg')+'">'+tl(diff)+' ('+pct.toFixed(1)+'%)</td>'+
     '<td><button class="bt bo bs" onclick="md(\'fx\',\''+f.id+'\')"><i class="fas fa-edit"></i></button> <button class="bt br bs" onclick="dFx(\''+f.id+'\')"><i class="fas fa-trash"></i></button></td></tr>';
   }).join('');
 }
 
-// =================== FİYAT ÇEKME ===================
-
-async function fetchPrice(symbol,type){
-  try{
-    // Yahoo Finance üzerinden Google Finance verileri
-    const url='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(symbol)+'?interval=1d&range=1d';
-    const resp=await fetch(url);
-    if(!resp.ok) throw new Error('Veri alınamadı');
-    const data=await resp.json();
-    const result=data.chart.result;
-    if(result&&result[0]&&result[0].meta){
-      return result[0].meta.regularMarketPrice||0;
-    }
-    return 0;
-  }catch(e){
-    console.warn('Fiyat çekilemedi: '+symbol,e);
-    return 0;
-  }
-}
-
-async function fetchSec(){
-  toast('Fiyatlar çekiliyor...','tin');
-  let cnt=0;
-  for(let s of D.sec){
-    if(!s.sym)continue;
-    let symbol=s.sym;
-    // Kripto için özel sembol dönüşümü
-    if(s.type==='crypto'){
-      const cryptoMap={
-        'bitcoin':'BTC-USD','ethereum':'ETH-USD','ripple':'XRP-USD',
-        'cardano':'ADA-USD','solana':'SOL-USD','dogecoin':'DOGE-USD',
-        'polkadot':'DOT-USD','avalanche':'AVAX-USD','matic':'MATIC-USD',
-        'chainlink':'LINK-USD','litecoin':'LTC-USD','shiba':'SHIB-USD',
-        'bnb':'BNB-USD','tron':'TRX-USD','stellar':'XLM-USD'
-      };
-      const lower=symbol.toLowerCase();
-      if(cryptoMap[lower])symbol=cryptoMap[lower];
-      else if(!symbol.includes('-'))symbol=symbol.toUpperCase()+'-USD';
-    }
-    const price=await fetchPrice(symbol,s.type);
-    if(price>0){
-      // TRY dönüşümü gerekiyorsa
-      if(symbol.includes('USD')&&!symbol.includes('TRY')){
-        const tryRate=await fetchPrice('USDTRY=X','currency');
-        s.cur=Math.round(price*(tryRate||34)*100)/100;
-      }else{
-        s.cur=Math.round(price*100)/100;
-      }
-      cnt++;
-    }
-    // Rate limit - her istek arasında küçük bekleme
-    await new Promise(r=>setTimeout(r,300));
-  }
-  sv();rSec();
-  toast(cnt+' varlığın fiyatı güncellendi');
-}
-
-async function fetchFx(){
-  toast('Fiyatlar çekiliyor...','tin');
-  let cnt=0;
-  for(let f of D.fx){
-    if(!f.sym)continue;
-    const price=await fetchPrice(f.sym,f.type);
-    if(price>0){
-      // Altın ve gümüş USD bazlı, TRY'ye çevir
-      if(f.type==='gold'||f.type==='silver'||f.type==='commodity'){
-        const tryRate=await fetchPrice('USDTRY=X','currency');
-        if(f.type==='gold'){
-          // Ons fiyatını gram fiyatına çevir (1 ons = 31.1035 gram)
-          s_cur=price/31.1035*(tryRate||34);
-          f.cur=Math.round(s_cur*100)/100;
-        }else{
-          f.cur=Math.round(price*(tryRate||34)*100)/100;
-        }
-      }else{
-        f.cur=Math.round(price*100)/100;
-      }
-      cnt++;
-    }
-    await new Promise(r=>setTimeout(r,300));
-  }
-  sv();rFx();
-  toast(cnt+' döviz/emtia fiyatı güncellendi');
-}
-
 // =================== DASHBOARD ===================
 function rDash(){
-  // Toplam hesap bakiyesi
   const totalBal=D.acc.reduce((s,a)=>s+a.bal,0);
-  // Toplam kredi kartı borcu
   const totalCC=D.cc.reduce((s,c)=>s+c.used,0);
-  // Toplam yatırım değeri
   const totalRE=D.re.reduce((s,r)=>s+r.cur,0);
   const totalSec=D.sec.reduce((s,x)=>s+x.qty*x.cur,0);
   const totalFx=D.fx.reduce((s,x)=>s+x.qty*x.cur,0);
   const totalInv=totalRE+totalSec+totalFx;
-  // Toplam ziynet değeri
   const totalCol=D.col.reduce((s,c)=>s+c.curVal,0);
-  // Toplam varlık
   const totalAsset=totalBal+totalInv+totalCol;
-  // Net varlık
   const netWorth=totalAsset-totalCC;
-  // Aylık ödeme
   const monthlyPay=D.pay.filter(p=>p.active).reduce((s,p)=>s+p.amt,0);
 
   document.getElementById('dCards').innerHTML=
@@ -704,53 +701,28 @@ function rDash(){
     '<div class="cd"><div class="lb">Kredi Kartı Borcu</div><div class="vl neg">'+tl(totalCC)+'</div><div class="su" style="color:var(--t2)">'+D.cc.length+' kart</div></div>'+
     '<div class="cd"><div class="lb">Yatırımlar</div><div class="vl">'+tl(totalInv)+'</div><div class="su" style="color:var(--t2)">Taşınmaz + Menkul + Döviz</div></div>'+
     '<div class="cd"><div class="lb">Ziynetler</div><div class="vl wrn">'+tl(totalCol)+'</div><div class="su" style="color:var(--t2)">'+D.col.length+' eşya</div></div>'+
-    '<div class="cd"><div class="lb">Aylık Ödemeler</div><div class="vl neg">'+tl(monthlyPay)+'</div><div class="su" style="color:var(--t2)">'+D.pay.filter(p=>p.active).length+' aktif ödeme</div></div>';
+    '<div class="cd"><div class="lb">Aylık Ödemeler</div><div class="vl neg">'+tl(monthlyPay)+'</div><div class="su" style="color:var(--t2)">'+D.pay.filter(p=>p.active).length+' aktif</div></div>';
 
-  // Yaklaşan ödemeler
-  const day=td();
-  const upEl=document.getElementById('dPays');
-  const upcoming=D.pay.filter(p=>p.active).sort((a,b)=>{
-    const dA=(a.day>=day?a.day-day:a.day+28-day);
-    const dB=(b.day>=day?b.day-day:b.day+28-day);
-    return dA-dB;
-  });
-  if(!upcoming.length){upEl.innerHTML='<div class="empty-state"><p>Aktif ödeme yok</p></div>';
-  }else{
-    upEl.innerHTML=upcoming.map(p=>{
-      const daysLeft=p.day>=day?p.day-day:p.day+28-day;
-      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd)">'+
-        '<div><div style="font-weight:500;font-size:13px">'+p.name+'</div><div style="font-size:11px;color:var(--t2)">'+(daysLeft===0?'Bugün':daysLeft+' gün sonra')+'</div></div>'+
-        '<div style="font-weight:600;'+(daysLeft<=3?'color:var(--rd)':'')+'">'+tl(p.amt)+'</div></div>';
-    }).join('');
-  }
+  const day=td();const upEl=document.getElementById('dPays');
+  const upcoming=D.pay.filter(p=>p.active).sort((a,b)=>{const dA=(a.day>=day?a.day-day:a.day+28-day);const dB=(b.day>=day?b.day-day:b.day+28-day);return dA-dB});
+  if(!upcoming.length){upEl.innerHTML='<div class="empty-state"><p>Aktif ödeme yok</p></div>'}
+  else{upEl.innerHTML=upcoming.map(p=>{const dl=p.day>=day?p.day-day:p.day+28-day;return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd)"><div><div style="font-weight:500;font-size:13px">'+p.name+'</div><div style="font-size:11px;color:var(--t2)">'+(dl===0?'Bugün':dl+' gün sonra')+'</div></div><div style="font-weight:600;'+(dl<=3?'color:var(--rd)':'')+'">'+tl(p.amt)+'</div></div>'}).join('')}
 
-  // Pasta grafik
-  rChart('dChart',[
-    {l:'Banka',v:totalBal,c:'#3b82f6'},
-    {l:'Yatırımlar',v:totalInv,c:'#10b981'},
-    {l:'Ziynetler',v:totalCol,c:'#f59e0b'},
-  ],'Varlık Dağılımı');
+  rChart('dChart',[{l:'Banka',v:totalBal,c:'#3b82f6'},{l:'Yatırımlar',v:totalInv,c:'#10b981'},{l:'Ziynetler',v:totalCol,c:'#f59e0b'}],'Varlık');
 }
 
 // =================== GRAFİK ===================
-function rChart(canvasId,data,title){
-  const ctx=document.getElementById(canvasId);
-  if(!ctx)return;
-  if(charts[canvasId])charts[canvasId].destroy();
-  const filtered=data.filter(d=>d.v>0);
-  if(!filtered.length){
-    charts[canvasId]=new Chart(ctx,{type:'doughnut',data:{labels:['Veri Yok'],datasets:[{data:[1],backgroundColor:['#1c2744']}]},options:{plugins:{legend:{display:false}}}});
-    return;
-  }
-  charts[canvasId]=new Chart(ctx,{
-    type:'doughnut',
-    data:{labels:filtered.map(d=>d.l),datasets:[{data:filtered.map(d=>d.v),backgroundColor:filtered.map(d=>d.c),borderWidth:0,hoverOffset:8}]},
-    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',padding:14,font:{size:12}}},tooltip:{callbacks:{label:function(c){return c.label+': ₺'+fm(c.raw)}}}}}
-  });
+function rChart(id,data,title){
+  const ctx=document.getElementById(id);if(!ctx)return;
+  if(charts[id])charts[id].destroy();
+  const f=data.filter(d=>d.v>0);
+  if(!f.length){charts[id]=new Chart(ctx,{type:'doughnut',data:{labels:['Veri Yok'],datasets:[{data:[1],backgroundColor:['#1c2744']}]},options:{plugins:{legend:{display:false}}}});return}
+  charts[id]=new Chart(ctx,{type:'doughnut',data:{labels:f.map(d=>d.l),datasets:[{data:f.map(d=>d.v),backgroundColor:f.map(d=>d.c),borderWidth:0,hoverOffset:8}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',padding:12,font:{size:11}}},tooltip:{callbacks:{label:function(c){return c.label+': ₺'+fm(c.raw)}}}}}});
 }
 
 // =================== OPTİMİZASYON ===================
 function rOpt(){
+  const totalBal=D.acc.reduce((s,a)=>s+a.bal,0);
   const totalRE=D.re.reduce((s,r)=>s+r.cur,0);
   const totalStock=D.sec.filter(s=>s.type==='stock').reduce((s,x)=>s+x.qty*x.cur,0);
   const totalFund=D.sec.filter(s=>s.type==='fund').reduce((s,x)=>s+x.qty*x.cur,0);
@@ -760,153 +732,59 @@ function rOpt(){
   const totalSilver=D.fx.filter(f=>f.type==='silver').reduce((s,x)=>s+x.qty*x.cur,0);
   const totalComm=D.fx.filter(f=>f.type==='commodity').reduce((s,x)=>s+x.qty*x.cur,0);
   const totalCol=D.col.reduce((s,c)=>s+c.curVal,0);
-
   const totalInv=totalRE+totalStock+totalFund+totalCrypto+totalCurrency+totalGold+totalSilver+totalComm;
-  const grandTotal=totalInv+totalCol+D.acc.reduce((s,a)=>s+a.bal,0);
+  const G=totalInv+totalCol+totalBal;
 
-  // Risk Skoru Hesaplama (1-100, düşük=riskli)
-  let riskScore=50;
-  if(grandTotal>0){
-    const cryptoPct=totalCrypto/grandTotal*100;
-    const stockPct=totalStock/grandTotal*100;
-    const goldPct=totalGold/grandTotal*100;
-    const cashPct=D.acc.reduce((s,a)=>s+a.bal,0)/grandTotal*100;
-    const rePct=totalRE/grandTotal*100;
-    const fundPct=totalFund/grandTotal*100;
-
-    // Yüksek risk azaltan faktörler
-    riskScore=50;
-    riskScore+=goldPct*0.4; // altın risk azaltır
-    riskScore+=cashPct*0.3; // nakit güvenli
-    riskScore+=fundPct*0.2; // fonlar orta risk
-    riskScore+=rePct*0.15; // taşınmaz sabit
-    riskScore-=cryptoPct*0.6; // kripto çok riskli
-    riskScore-=stockPct*0.2; // hisse riskli
-    riskScore=Math.max(1,Math.min(100,Math.round(riskScore)));
+  let rS=50,lS=50,dS=0;
+  if(G>0){
+    const cP=totalCrypto/G*100,sP=totalStock/G*100,gP=totalGold/G*100,caP=totalBal/G*100,rP=totalRE/G*100,fP=totalFund/G*100;
+    rS=50;rS+=gP*0.4;rS+=caP*0.3;rS+=fP*0.2;rS+=rP*0.15;rS-=cP*0.6;rS-=sP*0.2;rS=Math.max(1,Math.min(100,Math.round(rS)));
+    lS=0;lS+=caP*1;lS+=cP*0.85;lS+=sP*0.8;lS+=(totalCurrency/G*100)*0.9;lS+=gP*0.7;lS+=fP*0.6;lS+=rP*0.1;lS+=(totalCol/G*100)*0.15;lS=Math.max(1,Math.min(100,Math.round(lS)));
+    const cats=[totalRE,totalStock,totalFund,totalCrypto,totalCurrency,totalGold,totalCol,totalBal];
+    const ac=cats.filter(c=>c>0).length;dS=Math.min(100,ac*12);const mxP=Math.max(...cats)/G*100;
+    if(mxP>60)dS-=20;else if(mxP>40)dS-=10;dS=Math.max(1,Math.min(100,Math.round(dS)));
   }
 
-  // Likidite Skoru (1-100, yüksek=kolay nakde çevirme)
-  let liqScore=50;
-  if(grandTotal>0){
-    const cashPct=D.acc.reduce((s,a)=>s+a.bal,0)/grandTotal*100;
-    const cryptoPct=totalCrypto/grandTotal*100;
-    const stockPct=totalStock/grandTotal*100;
-    const currPct=totalCurrency/grandTotal*100;
-    const goldPct=totalGold/grandTotal*100;
-    const fundPct=totalFund/grandTotal*100;
-    const rePct=totalRE/grandTotal*100;
-    const colPct=totalCol/grandTotal*100;
+  let rE='<b>Risk Analizi:</b><br>';
+  if(G>0){
+    if(totalCrypto/G>0.3)rE+='⚠️ Kripto oranı yüksek (%'+(totalCrypto/G*100).toFixed(1)+'). Portföy riskini artırıyor.<br>';
+    if(totalBal/G>0.4)rE+='✅ Nakit oranı iyi (%'+(totalBal/G*100).toFixed(1)+'). Güvenli tarafta.<br>';
+    if(totalGold/G>0.1)rE+='✅ Altın (%'+(totalGold/G*100).toFixed(1)+') portföyü koruyor.<br>';
+    if(rS<30)rE+='🔴 Portföyünüz yüksek riskli.';else if(rS<60)rE+='🟡 Orta riskli portföy.';else rE+='🟢 Dengeli ve düşük riskli.';
+  }else rE='Henüz varlık eklenmedi.';
 
-    liqScore=0;
-    liqScore+=cashPct*1.0; // nakit en likit
-    liqScore+=cryptoPct*0.85; // kripto oldukça likit
-    liqScore+=stockPct*0.8; // hisse likit
-    liqScore+=currPct*0.9; // döviz likit
-    liqScore+=goldPct*0.7; // altın orta likit
-    liqScore+=fundPct*0.6; // fon orta likit
-    liqScore+=rePct*0.1; // taşınmaz zor
-    liqScore+=colPct*0.15; // ziynet zor
-    liqScore=Math.max(1,Math.min(100,Math.round(liqScore)));
-  }
+  let lE='<b>Likidite Analizi:</b><br>';
+  if(G>0){
+    if(totalRE/G>0.4)lE+='⚠️ Taşınmaz oranı yüksek. Nakde çevirme zor.<br>';
+    if(totalCol/G>0.2)lE+='⚠️ Ziynet oranı likidityi düşürüyor.<br>';
+    if(lS>70)lE+='🟢 Hızlı nakde çevrilebilir.';else if(lS>40)lE+='🟡 Orta düzey likidite.';else lE+='🔴 Düşük likidite.';
+  }else lE='Henüz varlık eklenmedi.';
 
-  // Çeşitlendirme Skoru
-  let divScore=0;
-  const cats=[totalRE,totalStock,totalFund,totalCrypto,totalCurrency,totalGold,totalCol,D.acc.reduce((s,a)=>s+a.bal,0)];
-  const activeCats=cats.filter(c=>c>0).length;
-  if(grandTotal>0){
-    divScore=Math.min(100,activeCats*12);
-    // Dağılım dengesi - en büyük parçanın oranına göre ceza
-    const maxPct=Math.max(...cats)/grandTotal*100;
-    if(maxPct>60)divScore-=20;
-    else if(maxPct>40)divScore-=10;
-    divScore=Math.max(1,Math.min(100,Math.round(divScore)));
-  }
+  let dE='<b>Çeşitlendirme:</b><br>';
+  if(G>0){
+    const ac=[totalRE,totalStock,totalFund,totalCrypto,totalCurrency,totalGold,totalCol,totalBal].filter(c=>c>0).length;
+    dE+=ac+' farklı varlık kategorisi.<br>';
+    if(dS>70)dE+='🟢 İyi çeşitlendirilmiş.';else if(dS>40)dE+='🟡 Daha fazla çeşitlendirme faydalı.';else dE+='🔴 Yeterince çeşitli değil.';
+  }else dE='Henüz varlık eklenmedi.';
 
-  // Risk açıklamaları
-  let riskExp='';
-  if(grandTotal>0){
-    const cryptoPct=(totalCrypto/grandTotal*100).toFixed(1);
-    const cashPct=(D.acc.reduce((s,a)=>s+a.bal,0)/grandTotal*100).toFixed(1);
-    const goldPct=(totalGold/grandTotal*100).toFixed(1);
-    riskExp='<b>Risk Analizi:</b><br>';
-    if(totalCrypto/grandTotal>0.3)riskExp+='⚠️ Kripto oranı yüksek (%'+cryptoPct+'). Portföyün riskini artırıyor.<br>';
-    if(D.acc.reduce((s,a)=>s+a.bal,0)/grandTotal>0.4)riskExp+='✅ Nakit oranı iyi (%'+cashPct+'). Güvenli tarafta.<br>';
-    if(totalGold/grandTotal>0.1)riskExp+='✅ Altın (%'+goldPct+') portföyü koruyor.<br>';
-    if(riskScore<30)riskExp+='🔴 Portföyünüz yüksek riskli. Daha güvenli araçlara kaydırmanız önerilir.';
-    else if(riskScore<60)riskExp+='🟡 Portföyünüz orta riskli. Dengeleme yapılabilir.';
-    else riskExp+='🟢 Portföyünüz dengeli ve düşük riskli.';
-  }else{riskExp='Henüz varlık eklenmedi.';}
-
-  let liqExp='';
-  if(grandTotal>0){
-    const rePct=(totalRE/grandTotal*100).toFixed(1);
-    const colPct=(totalCol/grandTotal*100).toFixed(1);
-    liqExp='<b>Likidite Analizi:</b><br>';
-    if(totalRE/grandTotal>0.4)liqExp+='⚠️ Taşınmaz oranı yüksek (%'+rePct+'). Nakde çevirme zor.<br>';
-    if(totalCol/grandTotal>0.2)liqExp+='⚠️ Ziynet oranı (%'+colPct+') likidityi düşürüyor.<br>';
-    if(liqScore>70)liqExp+='🟢 Portföyünüz hızlı nakde çevrilebilir.';
-    else if(liqScore>40)liqExp+='🟡 Orta düzey likidite. Acil durumda sorun yaşanabilir.';
-    else liqExp+='🔴 Düşük likidite. Acil nakit için varlık satışı zor olabilir.';
-  }else{liqExp='Henüz varlık eklenmedi.';}
-
-  let divExp='';
-  if(grandTotal>0){
-    divExp='<b>Çeşitlendirme Analizi:</b><br>'+activeCats+' farklı varlık kategorisinde yatırımınız var.<br>';
-    if(divScore>70)divExp+='🟢 Portföyünüz iyi çeşitlendirilmiş.';
-    else if(divScore>40)divExp+='🟡 Daha fazla çeşitlendirme faydalı olabilir.';
-    else divExp+='🔴 Portföyünüz yeterince çeşitli değil. Riski yaymak için farklı varlık sınıflarına yönelin.';
-  }else{divExp='Henüz varlık eklenmedi.';}
-
-  // Skor kutuları
-  function scoreColor(s){
-    if(s>=70)return 'background:rgba(16,185,129,.15);border-color:var(--gn)';
-    if(s>=40)return 'background:rgba(245,158,11,.15);border-color:var(--am)';
-    return 'background:rgba(239,68,68,.15);border-color:var(--rd)';
-  }
-  function circleColor(s){
-    if(s>=70)return 'background:rgba(16,185,129,.2);color:var(--gn)';
-    if(s>=40)return 'background:rgba(245,158,11,.2);color:var(--am)';
-    return 'background:rgba(239,68,68,.2);color:var(--rd)';
-  }
+  function sCol(s){return s>=70?'background:rgba(16,185,129,.15);border-color:var(--gn)':s>=40?'background:rgba(245,158,11,.15);border-color:var(--am)':'background:rgba(239,68,68,.15);border-color:var(--rd)'}
+  function cCol(s){return s>=70?'background:rgba(16,185,129,.2);color:var(--gn)':s>=40?'background:rgba(245,158,11,.2);color:var(--am)':'background:rgba(239,68,68,.2);color:var(--rd)'}
 
   document.getElementById('scArea').innerHTML=
-    '<div class="scb" style="'+scoreColor(riskScore)+'"><div class="scc" style="'+circleColor(riskScore)+'">'+riskScore+'</div><div class="scl">Risk Güvenliği</div><div class="sct">'+riskExp+'</div></div>'+
-    '<div class="scb" style="'+scoreColor(liqScore)+'"><div class="scc" style="'+circleColor(liqScore)+'">'+liqScore+'</div><div class="scl">Likidite</div><div class="sct">'+liqExp+'</div></div>'+
-    '<div class="scb" style="'+scoreColor(divScore)+'"><div class="scc" style="'+circleColor(divScore)+'">'+divScore+'</div><div class="scl">Çeşitlendirme</div><div class="sct">'+divExp+'</div></div>';
+    '<div class="scb" style="'+sCol(rS)+'"><div class="scc" style="'+cCol(rS)+'">'+rS+'</div><div class="scl">Risk Güvenliği</div><div class="sct">'+rE+'</div></div>'+
+    '<div class="scb" style="'+sCol(lS)+'"><div class="scc" style="'+cCol(lS)+'">'+lS+'</div><div class="scl">Likidite</div><div class="sct">'+lE+'</div></div>'+
+    '<div class="scb" style="'+sCol(dS)+'"><div class="scc" style="'+cCol(dS)+'">'+dS+'</div><div class="scl">Çeşitlendirme</div><div class="sct">'+dE+'</div></div>';
 
-  // Yatırım dağılım grafikleri
-  rChart('cInv',[
-    {l:'Taşınmaz/Araba',v:totalRE,c:'#3b82f6'},
-    {l:'Hisse',v:totalStock,c:'#6366f1'},
-    {l:'Fon',v:totalFund,c:'#8b5cf6'},
-    {l:'Kripto',v:totalCrypto,c:'#f59e0b'},
-    {l:'Döviz',v:totalCurrency,c:'#06b6d4'},
-    {l:'Altın',v:totalGold,c:'#eab308'},
-    {l:'Gümüş',v:totalSilver,c:'#94a3b8'},
-    {l:'Emtia',v:totalComm,c:'#f97316'},
-    {l:'Ziynet',v:totalCol,c:'#ec4899'},
-  ],'Yatırım Dağılımı');
-
-  rChart('cCat',[
-    {l:'Nakit',v:D.acc.reduce((s,a)=>s+a.bal,0),c:'#3b82f6'},
-    {l:'Sabit Varlık',v:totalRE+totalCol,c:'#10b981'},
-    {l:'Menkul Kıymet',v:totalStock+totalFund,c:'#8b5cf6'},
-    {l:'Kripto',v:totalCrypto,c:'#f59e0b'},
-    {l:'Döviz & Emtia',v:totalCurrency+totalGold+totalSilver+totalComm,c:'#06b6d4'},
-  ],'Kategori Dağılımı');
+  rChart('cInv',[{l:'Taşınmaz',v:totalRE,c:'#3b82f6'},{l:'Hisse',v:totalStock,c:'#6366f1'},{l:'Fon',v:totalFund,c:'#8b5cf6'},{l:'Kripto',v:totalCrypto,c:'#f59e0b'},{l:'Döviz',v:totalCurrency,c:'#06b6d4'},{l:'Altın',v:totalGold,c:'#eab308'},{l:'Gümüş',v:totalSilver,c:'#94a3b8'},{l:'Emtia',v:totalComm,c:'#f97316'},{l:'Ziynet',v:totalCol,c:'#ec4899'}],'Yatırım');
+  rChart('cCat',[{l:'Nakit',v:totalBal,c:'#3b82f6'},{l:'Sabit Varlık',v:totalRE+totalCol,c:'#10b981'},{l:'Menkul',v:totalStock+totalFund,c:'#8b5cf6'},{l:'Kripto',v:totalCrypto,c:'#f59e0b'},{l:'Döviz&Emtia',v:totalCurrency+totalGold+totalSilver+totalComm,c:'#06b6d4'}],'Kategori');
 }
 
-// =================== CHAT ASİSTAN ===================
+// =================== CHAT ===================
 function chat(){
-  const inp=document.getElementById('chIn');
-  const msg=inp.value.trim();
-  if(!msg)return;
-
+  const inp=document.getElementById('chIn');const msg=inp.value.trim();if(!msg)return;
   const msgsEl=document.getElementById('chMs');
-  msgsEl.innerHTML+='<div class="cm u"><div class="bb">'+msg+'</div></div>';
-  inp.value='';
+  msgsEl.innerHTML+='<div class="cm u"><div class="bb">'+msg+'</div></div>';inp.value='';
 
-  // Portföy verileri
   const totalBal=D.acc.reduce((s,a)=>s+a.bal,0);
   const totalRE=D.re.reduce((s,r)=>s+r.cur,0);
   const totalStock=D.sec.filter(s=>s.type==='stock').reduce((s,x)=>s+x.qty*x.cur,0);
@@ -915,130 +793,66 @@ function chat(){
   const totalCurrency=D.fx.filter(f=>f.type==='currency').reduce((s,x)=>s+x.qty*x.cur,0);
   const totalGold=D.fx.filter(f=>f.type==='gold').reduce((s,x)=>s+x.qty*x.cur,0);
   const totalCol=D.col.reduce((s,c)=>s+c.curVal,0);
-  const grand=totalBal+totalRE+totalStock+totalFund+totalCrypto+totalCurrency+totalGold+totalCol;
+  const G=totalBal+totalRE+totalStock+totalFund+totalCrypto+totalCurrency+totalGold+totalCol;
 
-  const lower=msg.toLowerCase();
-  let reply='';
+  const lo=msg.toLowerCase();let reply='';
 
-  // Basit AI yanıtları - portföy bazlı
-  if(lower.includes('risk')&&(lower.includes('azalt')||lower.includes('düşür'))){
+  if(lo.includes('risk')&&(lo.includes('azalt')||lo.includes('düşür'))){
     reply='📊 <b>Risk Azaltma Önerileri:</b><br><br>';
-    if(grand>0){
-      const cryptoPct=(totalCrypto/grand*100).toFixed(1);
-      const stockPct=(totalStock/grand*100).toFixed(1);
-      if(totalCrypto/grand>0.2){
-        reply+='⚠️ Kripto oranınız %'+cryptoPct+' ile yüksek.<br>'+
-        '→ Kriptodaki fonların bir kısmını <b>para piyasası fonlarına</b> veya <b>altına</b> kaydırmanızı öneririm.<br>'+
-        '→ Kripto oranını %15\'in altına düşürmek riski önemli ölçüde azaltır.<br><br>';
-      }
-      if(totalStock/grand>0.3){
-        reply+='📉 Hisse oranınız %'+stockPct+'.<br>'+
-        '→ Hisselerin bir kısmını <b>tahvil fonlarına</b> veya <b>devlet tahvillerine</b> kaydırabilirsiniz.<br><br>';
-      }
-      reply+='💡 <b>Genel Öneriler:</b><br>'+
-      '• Portföyün %20-30\'unu altın ve güvenli liman varlıklarında tutun<br>'+
-      '• Nakit/mevduat oranını %10-15 civarında tutun<br>'+
-      '• Para piyasası fonları düşük riskli alternatif olarak değerlendirilebilir<br>'+
-      '• Düzenli olarak portföy dengeleme yapın';
-    }else{reply='Henüz yatırım verisi eklenmemiş. Önce varlıklarınızı ekleyin.';}
+    if(G>0){
+      if(totalCrypto/G>0.2)reply+='⚠️ Kripto oranınız %'+(totalCrypto/G*100).toFixed(1)+' ile yüksek.<br>→ Bir kısmını <b>para piyasası fonlarına</b> veya <b>altına</b> kaydırın.<br><br>';
+      if(totalStock/G>0.3)reply+='📉 Hisse oranınız %'+(totalStock/G*100).toFixed(1)+'.<br>→ <b>Tahvil fonlarına</b> kaydırabilirsiniz.<br><br>';
+      reply+='💡 <b>Öneriler:</b><br>• %20-30 altın ve güvenli liman<br>• %10-15 nakit/mevduat<br>• Para piyasası fonları düşük riskli alternatif<br>• Her 3 ayda portföy dengeleme yapın';
+    }else reply='Henüz yatırım verisi yok.';
   }
-  else if(lower.includes('nakit')||lower.includes('likit')||lower.includes('acil')){
-    reply='💰 <b>Likidite & Nakit Önerileri:</b><br><br>';
-    if(grand>0){
-      const cashPct=(totalBal/grand*100).toFixed(1);
-      reply+='Mevcut nakit oranınız: %'+cashPct+'<br><br>';
-      if(totalBal/grand<0.1){
-        reply+='⚠️ Nakit oranınız düşük. Acil durum için yetersiz olabilir.<br>';
-      }
-      reply+='<b>Öneriler:</b><br>'+
-      '→ En az 3-6 aylık gideriniz kadar acil durum fonu ayırın<br>'+
-      '→ Kısa vadeli <b>para piyasası fonları</b> veya <b>vadeli mevduat</b> hızlı nakde çevrilebilir<br>'+
-      '→ <b>Borsa hisseleri</b> ve <b>kripto paralar</b> genellikle 1-3 gün içinde nakde çevrilebilir<br>'+
-      '→ <b>Döviz</b> anlık satılabilir, likiditesi yüksektir<br>'+
-      '→ <b>Taşınmazlar</b> ve <b>ziynetler</b> hızlı satılamaz, bunlara güvenmeyin<br><br>';
-      if(totalCrypto>0)reply+='💡 Kriptodaki varlıklarınız ('+tl(totalCrypto)+') hızlı nakde çevrilebilir ancak volatilite riski taşır.<br>';
-      if(totalStock>0)reply+='💡 Hisse senetleriniz ('+tl(totalStock)+') borsa saatlerinde satılabilir.<br>';
-    }else{reply='Henüz varlık verisi yok.';}
+  else if(lo.includes('nakit')||lo.includes('likit')||lo.includes('acil')){
+    reply='💰 <b>Likidite Önerileri:</b><br><br>';
+    if(G>0){
+      reply+='Nakit oranı: %'+(totalBal/G*100).toFixed(1)+'<br><br>';
+      reply+='→ En az 3-6 aylık gider kadar acil durum fonu<br>→ Kısa vadeli fonlar ve vadeli mevduat hızlı nakde çevrilir<br>→ Hisse ve kripto 1-3 günde nakde çevrilir<br>→ Taşınmaz ve ziynet hızlı satılamaz';
+      if(totalCrypto>0)reply+='<br><br>💡 Kriptolarınız ('+tl(totalCrypto)+') hızlı ama volatil.';
+    }else reply='Henüz varlık verisi yok.';
   }
-  else if(lower.includes('uzun vade')||lower.includes('büyüme')||lower.includes('getiri')){
-    reply='📈 <b>Uzun Vadeli Büyüme Önerileri:</b><br><br>';
-    if(grand>0){
-      reply+='Mevcut portföy dağılımınıza göre öneriler:<br><br>'+
-      '<b>Uzun vadeli büyüme portföyü için ideal dağılım:</b><br>'+
-      '• %30-40 Hisse senetleri (BIST endeks fonları, teknoloji hisseleri)<br>'+
-      '• %15-20 Kripto (Bitcoin ve Ethereum ağırlıklı)<br>'+
-      '• %15-20 Altın ve emtialar<br>'+
-      '• %10-15 Gayrimenkul veya GYO fonları<br>'+
-      '• %10 Nakit/mevduat (acil durum)<br><br>';
-      if(totalCrypto/grand>0.4)reply+='⚠️ Kripto oranınız çok yüksek. Büyüme için iyi ama risk çok fazla. Bir kısmını hisse ve altına kaydırın.<br>';
-      if(totalStock/grand<0.15)reply+='💡 Hisse oranınızı artırmanız uzun vadede iyi getiri sağlayabilir.<br>';
-      if(totalGold/grand<0.1)reply+='💡 Altın oranını artırmak enflasyona karşı koruma sağlar.<br>';
-    }else{reply='Henüz varlık verisi yok.';}
+  else if(lo.includes('uzun vade')||lo.includes('büyüme')||lo.includes('getiri')){
+    reply='📈 <b>Uzun Vadeli Büyüme:</b><br><br>İdeal dağılım:<br>• %30-40 Hisse<br>• %15-20 Kripto (BTC, ETH)<br>• %15-20 Altın<br>• %10-15 Gayrimenkul/GYO<br>• %10 Nakit';
+    if(G>0&&totalCrypto/G>0.4)reply+='<br><br>⚠️ Kripto çok yüksek. Bir kısmını hisse ve altına kaydırın.';
   }
-  else if(lower.includes('çeşitlendir')||lower.includes('dağıt')||lower.includes('dengele')){
-    reply='🎯 <b>Portföy Çeşitlendirme Önerileri:</b><br><br>';
-    if(grand>0){
-      reply+='<b>Mevcut dağılımınız:</b><br>';
-      if(totalBal>0)reply+='• Nakit: '+tl(totalBal)+' (%'+(totalBal/grand*100).toFixed(1)+')<br>';
-      if(totalRE>0)reply+='• Taşınmaz: '+tl(totalRE)+' (%'+(totalRE/grand*100).toFixed(1)+')<br>';
-      if(totalStock>0)reply+='• Hisse: '+tl(totalStock)+' (%'+(totalStock/grand*100).toFixed(1)+')<br>';
-      if(totalFund>0)reply+='• Fon: '+tl(totalFund)+' (%'+(totalFund/grand*100).toFixed(1)+')<br>';
-      if(totalCrypto>0)reply+='• Kripto: '+tl(totalCrypto)+' (%'+(totalCrypto/grand*100).toFixed(1)+')<br>';
-      if(totalCurrency>0)reply+='• Döviz: '+tl(totalCurrency)+' (%'+(totalCurrency/grand*100).toFixed(1)+')<br>';
-      if(totalGold>0)reply+='• Altın: '+tl(totalGold)+' (%'+(totalGold/grand*100).toFixed(1)+')<br>';
-      if(totalCol>0)reply+='• Ziynet: '+tl(totalCol)+' (%'+(totalCol/grand*100).toFixed(1)+')<br>';
-      reply+='<br><b>Dengeli portföy önerisi:</b><br>'+
-      '• Hiçbir varlık sınıfı %35\'i geçmemeli<br>'+
-      '• En az 4-5 farklı varlık sınıfında yatırım yapın<br>'+
-      '• Korelasyonu düşük varlıkları bir arada tutun (ör: altın + hisse)<br>'+
-      '• Her 3-6 ayda bir portföyünüzü dengeleyin';
-    }else{reply='Henüz varlık verisi yok.';}
+  else if(lo.includes('çeşitlendir')||lo.includes('dağıt')||lo.includes('dengele')){
+    reply='🎯 <b>Çeşitlendirme:</b><br><br>';
+    if(G>0){
+      if(totalBal>0)reply+='• Nakit: '+tl(totalBal)+' (%'+(totalBal/G*100).toFixed(1)+')<br>';
+      if(totalRE>0)reply+='• Taşınmaz: '+tl(totalRE)+' (%'+(totalRE/G*100).toFixed(1)+')<br>';
+      if(totalStock>0)reply+='• Hisse: '+tl(totalStock)+' (%'+(totalStock/G*100).toFixed(1)+')<br>';
+      if(totalFund>0)reply+='• Fon: '+tl(totalFund)+' (%'+(totalFund/G*100).toFixed(1)+')<br>';
+      if(totalCrypto>0)reply+='• Kripto: '+tl(totalCrypto)+' (%'+(totalCrypto/G*100).toFixed(1)+')<br>';
+      if(totalGold>0)reply+='• Altın: '+tl(totalGold)+' (%'+(totalGold/G*100).toFixed(1)+')<br>';
+      reply+='<br>• Hiçbir varlık %35\'i geçmemeli<br>• En az 4-5 kategori<br>• Her 3-6 ayda dengeleyin';
+    }else reply='Varlık verisi yok.';
   }
-  else if(lower.includes('portföy')||lower.includes('özet')||lower.includes('durum')){
-    reply='📋 <b>Portföy Özeti:</b><br><br>';
-    reply+='Toplam Varlık: <b>'+tl(grand)+'</b><br><br>';
+  else if(lo.includes('portföy')||lo.includes('özet')||lo.includes('durum')){
+    reply='📋 <b>Portföy Özeti:</b><br><br>Toplam: <b>'+tl(G)+'</b><br><br>';
     if(totalBal>0)reply+='💵 Nakit: '+tl(totalBal)+'<br>';
     if(totalRE>0)reply+='🏠 Taşınmaz: '+tl(totalRE)+'<br>';
     if(totalStock>0)reply+='📊 Hisse: '+tl(totalStock)+'<br>';
     if(totalFund>0)reply+='📁 Fon: '+tl(totalFund)+'<br>';
     if(totalCrypto>0)reply+='₿ Kripto: '+tl(totalCrypto)+'<br>';
-    if(totalCurrency>0)reply+='💱 Döviz: '+tl(totalCurrency)+'<br>';
     if(totalGold>0)reply+='🥇 Altın: '+tl(totalGold)+'<br>';
     if(totalCol>0)reply+='💎 Ziynet: '+tl(totalCol)+'<br>';
-    if(grand===0)reply+='Henüz varlık eklenmemiş.';
+    if(G===0)reply+='Henüz varlık eklenmemiş.';
   }
-  else if(lower.includes('enflasyon')||lower.includes('koruma')||lower.includes('koruna')){
-    reply='🛡️ <b>Enflasyona Karşı Koruma:</b><br><br>'+
-    '• <b>Altın:</b> Tarihsel olarak en iyi enflasyon koruması<br>'+
-    '• <b>Gayrimenkul:</b> Değeri enflasyonla birlikte artar<br>'+
-    '• <b>TIPS/Enflasyona endeksli tahviller:</b> Doğrudan koruma<br>'+
-    '• <b>Emtialar:</b> Hammadde fiyatları enflasyonla artar<br>'+
-    '• <b>Hisse senetleri:</b> Uzun vadede enflasyonu yener<br><br>'+
-    '⚠️ <b>Kaçınılması gerekenler:</b><br>'+
-    '• Uzun vadeli sabit getirili mevduatlar<br>'+
-    '• TL nakit (yüksek enflasyon ortamında değer kaybeder)';
+  else if(lo.includes('enflasyon')||lo.includes('koruma')){
+    reply='🛡️ <b>Enflasyona Karşı:</b><br><br>• <b>Altın:</b> En iyi koruma<br>• <b>Gayrimenkul:</b> Değeri enflasyonla artar<br>• <b>Hisse:</b> Uzun vadede enflasyonu yener<br>• <b>Emtia:</b> Hammadde fiyatları artar<br><br>⚠️ Kaçının: Uzun vadeli sabit mevduat, TL nakit';
   }
   else{
-    reply='Anlıyorum. Portföyünüzle ilgili şu konularda size yardımcı olabilirim:<br><br>'+
-    '• <b>"Risk azalt"</b> → Risk azaltma önerileri<br>'+
-    '• <b>"Nakit ihtiyacım var"</b> → Likidite artırma<br>'+
-    '• <b>"Uzun vadeli büyüme"</b> → Büyüme stratejisi<br>'+
-    '• <b>"Çeşitlendir"</b> → Portföy çeşitlendirme<br>'+
-    '• <b>"Portföy özeti"</b> → Mevcut durum analizi<br>'+
-    '• <b>"Enflasyon koruma"</b> → Enflasyona karşı strateji<br><br>'+
-    'Bu anahtar kelimeleri kullanarak bana soru sorabilirsiniz!';
+    reply='Şu konularda yardımcı olabilirim:<br><br>• <b>"Risk azalt"</b><br>• <b>"Nakit ihtiyacım var"</b><br>• <b>"Uzun vadeli büyüme"</b><br>• <b>"Çeşitlendir"</b><br>• <b>"Portföy özeti"</b><br>• <b>"Enflasyon koruma"</b>';
   }
 
-  setTimeout(()=>{
-    msgsEl.innerHTML+='<div class="cm b"><div class="bb">'+reply+'</div></div>';
-    msgsEl.scrollTop=msgsEl.scrollHeight;
-  },500);
+  setTimeout(()=>{msgsEl.innerHTML+='<div class="cm b"><div class="bb">'+reply+'</div></div>';msgsEl.scrollTop=msgsEl.scrollHeight},500);
   msgsEl.scrollTop=msgsEl.scrollHeight;
 }
 
 // =================== İLK YÜKLEME ===================
 rDash();rAcc();rCC();rPay();rCol();rRE();rSec();rFx();
-
 </script>
 </body>
 </html>
