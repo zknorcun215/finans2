@@ -121,8 +121,39 @@ table.dt tr:hover td{background:rgba(139,58,126,.03)}
 
 <!-- ŞİFRE EKRANI -->
 <div id="lockScreen" style="display:flex;position:fixed;inset:0;background:linear-gradient(135deg,#2a1b3d,#4a2d5e);z-index:99999;justify-content:center;align-items:center"><div style="background:#fff;border-radius:20px;padding:44px;text-align:center;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3)"><i class="fas fa-lock" style="font-size:44px;color:#8b3a7e;margin-bottom:20px;display:block"></i><h2 style="margin-bottom:6px;color:#2a1b3d;font-size:22px">Finans Takip</h2><p style="color:#8a7b98;font-size:13px;margin-bottom:24px">Devam etmek için şifrenizi girin</p><input type="password" id="lockPass" placeholder="Şifre..." style="width:100%;padding:13px;background:#f8f5fa;border:2px solid #e2d8ec;border-radius:10px;color:#2a1b3d;font-size:14px;margin-bottom:14px;text-align:center;font-family:Inter,sans-serif" onkeydown="if(event.key==='Enter')unlock()"><button onclick="unlock()" style="width:100%;padding:13px;background:#8b3a7e;color:#fff;border:none;border-radius:10px;font-size:14px;cursor:pointer;font-weight:600;font-family:Inter,sans-serif">Giriş Yap</button><p id="lockErr" style="color:#e11d48;font-size:12px;margin-top:10px;display:none">Yanlış şifre!</p></div></div>
-<script>function unlock(){if(document.getElementById('lockPass').value==='7u2pfD%A'){document.getElementById('lockScreen').style.display='none'}else{document.getElementById('lockErr').style.display='block';document.getElementById('lockPass').value=''}}</script>
 
+<script>
+async function unlock(){
+  const pass=document.getElementById('lockPass').value;
+  if(!pass){document.getElementById('lockErr').style.display='block';return}
+  document.getElementById('lockErr').style.display='none';
+  try{
+    const r=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})});
+    const data=await r.json();
+    if(data.success){
+      sessionStorage.setItem('FT_TOKEN',data.token);
+      document.getElementById('lockScreen').style.display='none';
+    }else{
+      document.getElementById('lockErr').style.display='block';
+      document.getElementById('lockPass').value='';
+    }
+  }catch(e){
+    document.getElementById('lockErr').textContent='Bağlantı hatası!';
+    document.getElementById('lockErr').style.display='block';
+  }
+}
+async function checkAuth(){
+  const token=sessionStorage.getItem('FT_TOKEN');
+  if(!token)return;
+  try{
+    const r=await fetch('/api/verify?token='+encodeURIComponent(token));
+    const data=await r.json();
+    if(data.valid)document.getElementById('lockScreen').style.display='none';
+  }catch(e){}
+}
+checkAuth();
+</script>
+  
 <nav id="sb">
 <div class="sl"><i class="fas fa-chart-line"></i><span>Finans Takip</span></div>
 <div class="sn">
