@@ -870,9 +870,123 @@ function chat(){
   msgsEl.scrollTop=msgsEl.scrollHeight;
 }
 
+// =================== OTOMATİK İŞLEME ===================
+function autoProcess(){
+  const today=new Date();
+  const todayStr=today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+  const lastCheck=localStorage.getItem('FT_LAST_CHECK')||'';
+  
+  if(lastCheck===todayStr)return; // Bugün zaten kontrol edilmiş
+  
+  const lastDate=lastCheck?new Date(lastCheck):null;
+  const currentDay=today.getDate();
+  const currentMonth=today.getMonth();
+  const currentYear=today.getFullYear();
+  
+  let processedCount=0;
+  
+  // Hangi günleri kontrol etmemiz gerekiyor?
+  let daysToCheck=[];
+  
+  if(!lastDate){
+    // İlk kez çalışıyor, sadece bugünü kontrol et
+    daysToCheck=[currentDay];
+  }else{
+    // Son kontrolden bugüne kadar geçen günleri bul
+    let checkDate=new Date(lastDate);
+    checkDate.setDate(checkDate.getDate()+1); // Ertesi günden başla
+    
+    while(checkDate<=today){
+      daysToCheck.push(checkDate.getDate());
+      checkDate.setDate(checkDate.getDate()+1);
+    }
+  }
+  
+  if(daysToCheck.length===0)return;
+  
+  let logs=[];
+  
+  daysToCheck.forEach(day=>{
+    
+    // 1) GELİRLERİ YATIR
+    D.acc.forEach(a=>{
+      if(a.incType&&a.incAmt>0&&a.incDay===day){
+        a.bal+=a.incAmt;
+        processedCount++;
+        logs.push('💰 '+a.bank+' hesabına '+tl(a.incAmt)+' gelir yatırıldı');
+      }
+    });
+    
+    // 2) ÖDEMELERİ İŞLE
+    D.pay.forEach(p=>{
+      if(p.day===day&&p.active){
+        let done=false;
+        if(p.mth&&p.mth.startsWith('a_')){
+          const acc=D.acc.find(a=>a.id===p.mth.slice(2));
+          if(acc){acc.bal-=p.amt;done=true}
+        }else if(p.mth&&p.mth.startsWith('c_')){
+          const cc=D.cc.find(c=>c.id===p.mth.slice(2));
+          if(cc){cc.used+=p.amt;done=true}
+        }
+        if(done){
+          processedCount++;
+          logs.push('💳 '+p.name+' ödemesi: '+tl(p.amt));
+          if(p.inst){
+            p.rInst--;
+            if(p.rInst<=0){
+              p.active=false;
+              logs.push('✅ '+p.name+' taksitleri tamamlandı!');
+            }
+          }
+        }
+      }
+    });
+    
+    // 3) KREDİ KARTI EKSTRELERİ
+    D.cc.forEach(c=>{
+      if(c.pyDay===day&&c.used>0&&c.accId){
+        const acc=D.acc.find(a=>a.id===c.accId);
+        if(acc){
+          acc.bal-=c.used;
+          logs.push('🏦 '+c.name+' ekstresi: '+tl(c.used)+' hesaptan düşüldü');
+          c.used=0;
+          processedCount++;
+        }
+      }
+    });
+    
+  });
+  
+  // Tarihi güncelle
+  localStorage.setItem('FT_LAST_CHECK',todayStr);
+  
+  if(processedCount>0){
+    sv();
+    
+    // Bildirim göster
+    setTimeout(()=>{
+      let msg='📋 Otomatik işlemler tamamlandı:\n\n';
+      logs.forEach(l=>msg+=l+'\n');
+      
+      // Güzel bildirim kutusu göster
+      const nDiv=document.createElement('div');
+      nDiv.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:2px solid var(--ac);border-radius:16px;padding:28px;max-width:450px;width:90%;max-height:70vh;overflow-y:auto;z-index:5000;box-shadow:0 20px 60px rgba(42,27,61,.3)';
+      nDiv.innerHTML='<h2 style="color:var(--sb);margin-bottom:16px;display:flex;align-items:center;gap:10px"><i class="fas fa-robot" style="color:var(--ac)"></i> Otomatik İşlemler</h2>'+
+        '<div style="font-size:13px;line-height:2;color:var(--tx)">'+logs.map(l=>'<div style="padding:6px 0;border-bottom:1px solid var(--bd)">'+l+'</div>').join('')+'</div>'+
+        '<div style="margin-top:16px;text-align:center"><button class="bt bp" onclick="this.parentElement.parentElement.remove();oBg.remove()">Tamam</button></div>';
+      
+      const oBg=document.createElement('div');
+      oBg.style.cssText='position:fixed;inset:0;background:rgba(42,27,61,.4);z-index:4999;backdrop-filter:blur(3px)';
+      
+      document.body.appendChild(oBg);
+      document.body.appendChild(nDiv);
+    },500);
+  }
+}
+
 // =================== İLK YÜKLEME ===================
+autoProcess();
 rDash();rAcc();rCC();rPay();rCol();rRE();rSec();rFx();
 </script>
 </body>
 </html>
-
