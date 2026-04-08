@@ -268,8 +268,38 @@ checkAuth();
 </div>
 
 <script>
-let D=JSON.parse(localStorage.getItem('FTD')||'null')||{acc:[],cc:[],pay:[],col:[],re:[],sec:[],fx:[]};
-const sv=()=>localStorage.setItem('FTD',JSON.stringify(D));
+let D={acc:[],cc:[],pay:[],col:[],re:[],sec:[],fx:[]};
+let dataLoaded=false;
+
+async function loadData(){
+  try{
+    const r=await fetch('/api/data');
+    const data=await r.json();
+    if(data&&(data.acc||data.cc)){
+      D=data;
+      // localStorage'ı da güncelle (yedek olarak)
+      localStorage.setItem('FTD',JSON.stringify(D));
+      dataLoaded=true;
+      // Ekranları güncelle
+      rDash();rAcc();rCC();rPay();rCol();rRE();rSec();rFx();
+    }
+  }catch(e){
+    console.log('Bulut veri alınamadı, localStorage kullanılıyor');
+    const local=JSON.parse(localStorage.getItem('FTD')||'null');
+    if(local)D=local;
+  }
+}
+
+const sv=()=>{
+  // Hem localStorage'a hem buluta kaydet
+  localStorage.setItem('FTD',JSON.stringify(D));
+  // Buluta kaydet (arka planda)
+  fetch('/api/data',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(D)
+  }).catch(e=>console.log('Bulut kayıt hatası:',e));
+};
 const uid=()=>'_'+Math.random().toString(36).slice(2,9)+Date.now().toString(36);
 const fm=n=>new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
 const tl=n=>'₺'+fm(n);
@@ -986,6 +1016,7 @@ function autoProcess(){
 
 // =================== İLK YÜKLEME ===================
 autoProcess();
+loadData();
 rDash();rAcc();rCC();rPay();rCol();rRE();rSec();rFx();
 </script>
 </body>
